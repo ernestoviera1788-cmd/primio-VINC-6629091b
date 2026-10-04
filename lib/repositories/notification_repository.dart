@@ -46,4 +46,19 @@ class NotificationRepository {
   Future<void> markRead(String notificationId) async {
     await _api.sendAuthed('marknotificationread', _token(), {'notificationId': notificationId});
   }
+
+  /// Persists the user's notification toggles on the server.
+  Future<void> updateSettings({
+    required bool likes,
+    required bool matches,
+    required bool messages,
+  }) async {
+    await _api.sendAuthed('updatenotificationsettings', _token(), {
+      'likes': likes,
+      'matches': matches,
+      'messages': messages,
+      'security': true,
+      'marketing': false,
+    });
+  }
 }

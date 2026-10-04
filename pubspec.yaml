@@ -26,6 +26,7 @@ dependencies:
 
   # OS integration / UX helpers
   url_launcher: ^6.3.2
+  flutter_local_notifications: ^22.3.1
   awesome_notifications: ^0.12.1
   path: ^1.9.1
   collection: ^1.19.1

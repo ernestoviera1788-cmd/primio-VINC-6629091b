@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -11,9 +13,14 @@ import 'repositories/notification_repository.dart';
 import 'repositories/profile_repository.dart';
 import 'router/app_router.dart';
 import 'services/auth_service.dart';
+import 'services/local_notifications.dart';
 import 'theme/theme.dart';
 
-void main() => runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LocalNotifications.init();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -28,7 +35,32 @@ class _MyAppState extends State<MyApp> {
   late final GoRouter _router = AppRouter.create(_auth);
 
   @override
+  void initState() {
+    super.initState();
+    LocalNotifications.onTap = _handleNotificationTap;
+  }
+
+  /// Deep-link from a tapped system notification into the app.
+  void _handleNotificationTap(String payload) {
+    try {
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      final conversationId = data['conversationId'] as String?;
+      final type = data['type'] as String?;
+      if (conversationId != null && conversationId.isNotEmpty) {
+        _router.push('/messages/chat/$conversationId');
+      } else if (type == 'match') {
+        _router.go('/matches');
+      } else {
+        _router.go('/activity');
+      }
+    } catch (_) {
+      _router.go('/activity');
+    }
+  }
+
+  @override
   void dispose() {
+    LocalNotifications.onTap = null;
     _router.dispose();
     _auth.dispose();
     super.dispose();
@@ -47,9 +79,9 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp.router(
         title: 'VINCÓ',
         routerConfig: _router,
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.darkTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.dark,
         locale: const Locale('es'),
         supportedLocales: const [Locale('es'), Locale('en')],
         localizationsDelegates: const [

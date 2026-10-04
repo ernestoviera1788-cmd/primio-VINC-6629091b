@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/notifications_provider.dart';
 import '../../theme/responsive_layout.dart';
 import '../../theme/theme.dart';
 import 'vinco_wordmark.dart';
@@ -18,13 +20,37 @@ class AppShell extends StatelessWidget {
     (Icons.person_outline_rounded, Icons.person_rounded, 'Perfil'),
   ];
 
+  /// Index of the tab that shows the notification badge.
+  static const _activityIndex = 1;
+
+  /// Index of the tab that shows a dot for unread messages.
+  static const _messagesIndex = 3;
+
   void _go(int index) => navigationShell.goBranch(
         index,
         initialLocation: index == navigationShell.currentIndex,
       );
 
+  Widget _tabIcon(BuildContext context, int index, IconData icon, int unread, int msgUnread) {
+    final themed = Icon(icon);
+    if (index == _messagesIndex && msgUnread > 0) {
+      return Badge(
+        smallSize: 10,
+        backgroundColor: const Color(0xFFEC4899),
+        child: themed,
+      );
+    }
+    if (index != _activityIndex || unread <= 0) return themed;
+    return Badge(
+      label: Text(unread > 99 ? '99+' : '$unread'),
+      child: themed,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final unread = context.watch<NotificationsProvider>().activityUnreadCount;
+    final msgUnread = context.watch<NotificationsProvider>().messageUnreadCount;
     if (ResponsiveLayout.isMobileLayout(context)) {
       return Scaffold(
         body: navigationShell,
@@ -32,8 +58,12 @@ class AppShell extends StatelessWidget {
           selectedIndex: navigationShell.currentIndex,
           onDestinationSelected: _go,
           destinations: [
-            for (final item in _items)
-              NavigationDestination(icon: Icon(item.$1), selectedIcon: Icon(item.$2), label: item.$3),
+            for (int i = 0; i < _items.length; i++)
+              NavigationDestination(
+                icon: _tabIcon(context, i, _items[i].$1, unread, msgUnread),
+                selectedIcon: _tabIcon(context, i, _items[i].$2, unread, msgUnread),
+                label: _items[i].$3,
+              ),
           ],
         ),
       );
@@ -54,8 +84,12 @@ class AppShell extends StatelessWidget {
                 child: VincoWordmark(compact: !extended),
               ),
               destinations: [
-                for (final item in _items)
-                  NavigationRailDestination(icon: Icon(item.$1), selectedIcon: Icon(item.$2), label: Text(item.$3)),
+                for (int i = 0; i < _items.length; i++)
+                  NavigationRailDestination(
+                    icon: _tabIcon(context, i, _items[i].$1, unread, msgUnread),
+                    selectedIcon: _tabIcon(context, i, _items[i].$2, unread, msgUnread),
+                    label: Text(_items[i].$3),
+                  ),
               ],
             ),
           ),

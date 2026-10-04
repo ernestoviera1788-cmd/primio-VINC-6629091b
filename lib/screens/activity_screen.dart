@@ -47,23 +47,23 @@ class ActivityScreen extends StatelessWidget {
         message: 'Aquí verás tus vínculos, mensajes y avisos cuando tengas una cuenta.',
         onSignIn: () => context.read<AuthProvider>().leaveGuestMode(),
       );
-    } else if (n.isLoading && n.items.isEmpty) {
+    } else if (n.isLoading && n.activityItems.isEmpty) {
       body = const SkeletonList(semanticLabel: 'Cargando tu actividad');
-    } else if (n.error != null && n.items.isEmpty) {
+    } else if (n.error != null && n.activityItems.isEmpty) {
       body = StateView(icon: Icons.cloud_off_rounded, title: 'No pudimos cargar tu actividad', message: n.error!, primaryLabel: 'Reintentar', onPrimary: n.load);
-    } else if (n.items.isEmpty) {
+    } else if (n.activityItems.isEmpty) {
       body = StateView(
         icon: Icons.notifications_none_rounded,
         image: 'assets/images/empty_activity.png',
         title: 'Todo tranquilo por aquí',
-        message: 'Cuando tengas un vínculo, un mensaje o un like, lo verás en esta lista.',
+        message: 'Cuando tengas un vínculo o un like, lo verás en esta lista.',
         primaryLabel: 'Actualizar',
         onPrimary: n.load,
       );
     } else {
       final entries = <Object>[];
       String? lastDay;
-      for (final item in n.items) {
+      for (final item in n.activityItems) {
         final day = _dayLabel(item.createdAt);
         if (day != lastDay) {
           entries.add(day);
@@ -97,7 +97,7 @@ class ActivityScreen extends StatelessWidget {
 
     return TabPage(
       title: 'Actividad',
-      subtitle: n.unreadCount > 0 ? '${n.unreadCount} sin leer' : 'Vínculos, mensajes y likes.',
+      subtitle: n.activityUnreadCount > 0 ? '${n.activityUnreadCount} sin leer' : 'Vínculos y likes.',
       body: body,
     );
   }

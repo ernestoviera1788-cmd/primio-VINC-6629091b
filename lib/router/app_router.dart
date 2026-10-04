@@ -76,7 +76,9 @@ class AppRouter {
                     create: (ctx) => MatchesProvider(service: ctx.read<MatchService>())..load(),
                   ),
                   ChangeNotifierProvider(
-                    create: (_) => NotificationsProvider(service: NotificationService(repository: notifications))..load(),
+                    create: (_) => NotificationsProvider(service: NotificationService(repository: notifications))
+                      ..load()
+                      ..startPolling(),
                   ),
                 ],
                 child: AppShell(navigationShell: navigationShell),

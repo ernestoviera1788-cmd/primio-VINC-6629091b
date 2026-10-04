@@ -161,36 +161,63 @@ class AppTheme {
     ),
   );
 
+  static const Color gradientStart = Color(0xFFA855F7);
+  static const Color gradientEnd = Color(0xFFEC4899);
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [gradientStart, gradientEnd],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+  );
+
+  /// Noir: premium dark theme (always on).
   static final ThemeData darkTheme = _buildTheme(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFA8432A),
+    colorScheme: const ColorScheme(
       brightness: Brightness.dark,
-    ).copyWith(
-      primary: const Color(0xFFF2A68E),
-      onPrimary: const Color(0xFF4F1606),
-      primaryContainer: const Color(0xFF6E2A17),
-      onPrimaryContainer: const Color(0xFFFFDBCF),
-      secondary: const Color(0xFF8FD3B6),
-      onSecondary: const Color(0xFF00382A),
-      secondaryContainer: const Color(0xFF1F4F40),
-      onSecondaryContainer: const Color(0xFFC9F0DF),
-      tertiary: const Color(0xFFE9C26E),
-      onTertiary: const Color(0xFF3F2C00),
-      tertiaryContainer: const Color(0xFF5C4300),
-      onTertiaryContainer: const Color(0xFFFFE3A8),
-      surface: const Color(0xFF15110F),
-      onSurface: const Color(0xFFF3EBE6),
+      primary: Color(0xFFEC4899),
+      onPrimary: Color(0xFFFFFFFF),
+      primaryContainer: Color(0xFF4A1E3D),
+      onPrimaryContainer: Color(0xFFF8C9E2),
+      secondary: Color(0xFFA855F7),
+      onSecondary: Color(0xFFFFFFFF),
+      secondaryContainer: Color(0xFF35205C),
+      onSecondaryContainer: Color(0xFFDDC2FF),
+      tertiary: Color(0xFFFBBF24),
+      onTertiary: Color(0xFF221100),
+      tertiaryContainer: Color(0xFF4A3200),
+      onTertiaryContainer: Color(0xFFFFE3A8),
+      error: Color(0xFFFF8A80),
+      onError: Color(0xFF2A0A0A),
+      errorContainer: Color(0xFF5C1A1A),
+      onErrorContainer: Color(0xFFFFDAD4),
+      surface: Color(0xFF14121E),
+      onSurface: Color(0xFFF2EFFA),
+      surfaceDim: Color(0xFF0E0C16),
+      surfaceBright: Color(0xFF353252),
+      surfaceContainerLowest: Color(0xFF0E0C16),
+      surfaceContainerLow: Color(0xFF221F33),
+      surfaceContainer: Color(0xFF2C2942),
+      surfaceContainerHigh: Color(0xFF353252),
+      surfaceContainerHighest: Color(0xFF3F3B60),
+      onSurfaceVariant: Color(0xFFA7A3C0),
+      outline: Color(0xFF4A4662),
+      outlineVariant: Color(0xFF2E2B45),
+      shadow: Color(0xFF000000),
+      scrim: Color(0x99000000),
+      inverseSurface: Color(0xFFF2EFFA),
+      onInverseSurface: Color(0xFF14121E),
+      inversePrimary: Color(0xFFA855F7),
+      surfaceTint: Color(0xFFEC4899),
     ),
     appColors: const AppColorsExtension(
-      like: Color(0xFF8FD3B6),
-      pass: Color(0xFFC9BDB7),
-      spark: Color(0xFFE9C26E),
-      verified: Color(0xFF8DB4FF),
-      subtleText: Color(0xFFB8ABA4),
-      photoScrim: Color(0xE6120C0A),
+      like: Color(0xFF34D399),
+      pass: Color(0xFF8E8A9E),
+      spark: Color(0xFFFBBF24),
+      verified: Color(0xFF60A5FA),
+      subtleText: Color(0xFFA7A3C0),
+      photoScrim: Color(0xE60B0912),
       onPhoto: Color(0xFFFFFFFF),
-      glowA: Color(0x2EF2A68E),
-      glowB: Color(0x1F8FD3B6),
+      glowA: Color(0x14A855F7),
+      glowB: Color(0x0FEC4899),
     ),
   );
 
@@ -200,6 +227,9 @@ class AppTheme {
   }) {
     final textTheme = _buildTextTheme(colorScheme);
     final pill = RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusPill));
+    final isDark = colorScheme.brightness == Brightness.dark;
+    final navSelected = isDark ? const Color(0xFFEC4899) : colorScheme.primary;
+    final navUnselected = isDark ? const Color(0xFFA7A3C0) : colorScheme.onSurfaceVariant;
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
@@ -267,9 +297,27 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: spacingMd, vertical: spacingMd),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: colorScheme.surfaceContainerLow,
-        indicatorColor: colorScheme.primaryContainer,
-        labelTextStyle: WidgetStatePropertyAll(textTheme.labelMedium),
+        backgroundColor: isDark ? const Color(0xFF1B1928) : colorScheme.surfaceContainerLow,
+        indicatorColor: isDark ? Colors.transparent : colorScheme.primaryContainer,
+        elevation: isDark ? 8 : 0,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(color: selected ? navSelected : navUnselected, size: selected ? 26 : 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            color: selected ? navSelected : navUnselected,
+            fontSize: 11,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          );
+        }),
+      ),
+      badgeTheme: const BadgeThemeData(
+        backgroundColor: Color(0xFFEC4899),
+        textColor: Colors.white,
+        smallSize: 8,
+        largeSize: 18,
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: colorScheme.surfaceContainerLow,

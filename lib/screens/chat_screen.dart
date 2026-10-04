@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/chat_provider.dart';
 import '../providers/matches_provider.dart';
+import '../providers/notifications_provider.dart';
 import '../theme/responsive_layout.dart';
 import '../theme/theme.dart';
 import '../widgets/chat/chat_composer.dart';
@@ -13,14 +14,47 @@ import '../widgets/common/skeleton.dart';
 import '../widgets/common/state_view.dart';
 import 'match_actions.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   final String conversationId;
 
   const ChatScreen({super.key, required this.conversationId});
 
   @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  bool _syncedAfterLoad = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Clear the Messages tab dot once the user views the conversation.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<NotificationsProvider>().markConversationRead(widget.conversationId);
+      }
+    });
+  }
+
+  /// After messages load, the backend has marked notifications as read
+  /// (listmessages does this server-side). Re-sync local state so the dot
+  /// clears even if the earlier mark-read raced with the message fetch.
+  void _syncAfterMessagesLoaded(bool isLoading) {
+    if (!isLoading && !_syncedAfterLoad && mounted) {
+      _syncedAfterLoad = true;
+      // Small delay to let the backend's listmessages commit first.
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) context.read<NotificationsProvider>().load();
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final conversationId = widget.conversationId;
     final chat = context.watch<ChatProvider>();
+    _syncAfterMessagesLoaded(chat.isLoading);
     final match = context.watch<MatchesProvider>().byConversation(conversationId);
     final name = match?.user.name ?? 'Chat';
     final messages = chat.messages;

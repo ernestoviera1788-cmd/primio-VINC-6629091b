@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/theme.dart';
+import '../common/gradient_button.dart';
 
 class SubmitButton extends StatelessWidget {
   final String label;
@@ -11,17 +11,6 @@ class SubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: busy ? null : onPressed,
-      child: busy
-          ? Semantics(
-              label: 'Cargando',
-              child: const SizedBox.square(
-                dimension: AppTheme.iconMd,
-                child: CircularProgressIndicator(strokeWidth: AppTheme.borderThick),
-              ),
-            )
-          : Text(label),
-    );
+    return GradientButton(label: label, onPressed: onPressed, busy: busy);
   }
 }

@@ -10,4 +10,11 @@ class NotificationService {
   Future<NotificationPage> load() => repository.list();
 
   Future<void> markRead(String id) => repository.markRead(id);
+
+  Future<void> updateSettings({
+    required bool likes,
+    required bool matches,
+    required bool messages,
+  }) =>
+      repository.updateSettings(likes: likes, matches: matches, messages: messages);
 }

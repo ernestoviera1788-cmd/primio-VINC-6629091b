@@ -61,7 +61,21 @@ class MeRepository {
 
   static MyProfile _profile(dynamic data) {
     if (data is! Map) throw ApiException('BAD_RESPONSE', 'Perfil: $data');
-    final inner = data['profile'] is Map ? data['profile'] as Map : (data['user'] is Map ? data['user'] as Map : data);
-    return MyProfile.fromJson(Map<String, dynamic>.from(inner));
+    // getme returns user fields at the top level and preference fields nested
+    // under "profile". Merge both so MyProfile.fromJson sees everything.
+    final merged = Map<String, dynamic>.from(data);
+    for (final key in const ['profile', 'user']) {
+      final inner = data[key];
+      if (inner is Map) {
+        for (final e in inner.entries) {
+          merged[e.key as String] = e.value;
+        }
+      }
+    }
+    merged.remove('profile');
+    merged.remove('user');
+    merged.remove('settings');
+    merged.remove('photos');
+    return MyProfile.fromJson(merged);
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../theme/theme.dart';
+import 'gradient_button.dart';
 
 class StateView extends StatelessWidget {
   final IconData icon;
@@ -55,7 +56,7 @@ class StateView extends StatelessWidget {
             ),
             if (primaryLabel != null) ...[
               const SizedBox(height: AppTheme.spacingLg),
-              FilledButton(onPressed: onPrimary, child: Text(primaryLabel!)),
+              GradientButton(label: primaryLabel!, onPressed: onPrimary),
             ],
             if (secondaryLabel != null) ...[
               const SizedBox(height: AppTheme.spacingSm),
