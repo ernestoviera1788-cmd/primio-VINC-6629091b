@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
 import '../models/chat_message.dart';
 import '../services/auth_service.dart';
+import '../services/local_notifications.dart';
 import '../services/match_service.dart';
 
-/// Route-scoped: polls listmessages every few seconds while the chat is open
-/// (the backend has no realtime channel).
+/// Route-scoped: polls listmessages every few seconds while the chat is open.
+/// Newly received messages trigger a sound-bearing OS notification while the
+/// app is active. Remote push is needed when this process is backgrounded/killed.
 class ChatProvider extends ChangeNotifier {
   ChatProvider({required MatchService service, required this.conversationId}) : _service = service;
 
@@ -20,6 +23,7 @@ class ChatProvider extends ChangeNotifier {
   bool _sending = false;
   bool _fetching = false;
   bool _disposed = false;
+  bool _hasInitialMessageSnapshot = false;
   String? _error;
   Timer? _timer;
 
@@ -37,7 +41,22 @@ class ChatProvider extends ChangeNotifier {
     if (_fetching || _disposed) return;
     _fetching = true;
     try {
-      _messages = await _service.messages(conversationId);
+      final latest = await _service.messages(conversationId);
+      if (_hasInitialMessageSnapshot) {
+        final knownIds = _messages.map((m) => m.id).toSet();
+        final incoming = latest.where((m) => !m.mine && !knownIds.contains(m.id)).toList()
+          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        for (final message in incoming) {
+          await LocalNotifications.show(
+            id: message.id.hashCode,
+            title: 'Nuevo mensaje en VINCÓ',
+            body: message.body,
+            payload: jsonEncode({'type': 'message', 'conversationId': conversationId}),
+          );
+        }
+      }
+      _messages = latest;
+      _hasInitialMessageSnapshot = true;
       _error = null;
     } catch (e) {
       _error = AuthService.messageFor(e);
