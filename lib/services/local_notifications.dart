@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// System (OS-level) notifications for matches and messages.
-/// The backend has no push; the app polls and surfaces new items locally.
+/// Local notifications work while the app process is alive; remote push requires
+/// Firebase Messaging plus a backend that sends FCM/APNs messages.
 class LocalNotifications {
   LocalNotifications._();
 
@@ -34,6 +35,7 @@ class LocalNotifications {
       'Actividad de VINCÓ',
       description: 'Avisos de matches y mensajes',
       importance: Importance.high,
+      playSound: true,
     );
     final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     await android?.createNotificationChannel(channel);
@@ -54,8 +56,13 @@ class LocalNotifications {
       channelDescription: 'Avisos de matches y mensajes',
       importance: Importance.high,
       priority: Priority.high,
+      playSound: true,
     );
-    const iosDetails = DarwinNotificationDetails();
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
     await _plugin.show(
       id: id,
       title: title,
